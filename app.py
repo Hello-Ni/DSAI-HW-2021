@@ -8,6 +8,14 @@ import model
 from torch.autograd import Variable
 from sklearn.preprocessing import MinMaxScaler
 # You can write code above the if-main block.
+num_epochs = 2000
+learning_rate = 0.01
+
+input_size = 1
+hidden_size = 2
+num_layers = 1
+
+num_classes = 1
 
 
 def createSequence(data, seq_len):
@@ -53,22 +61,13 @@ if __name__ == '__main__':
     data_x = Variable(torch.Tensor(np.array(x)))
     data_y = Variable(torch.Tensor(np.array(y)))
 
-    trainX = Variable(torch.Tensor(np.array(x[:n_train])))
-    trainY = Variable(torch.Tensor(np.array(y[:n_train])))
+    train_x = Variable(torch.Tensor(np.array(x[:n_train])))
+    train_y = Variable(torch.Tensor(np.array(y[:n_train])))
 
     testX = Variable(torch.Tensor(np.array(x[n_train:])))
     testY = Variable(torch.Tensor(np.array(y[n_train:])))
     # plt.plot(energe_data, label='data')
     # plt.show()
-
-    num_epochs = 2000
-    learning_rate = 0.01
-
-    input_size = 1
-    hidden_size = 2
-    num_layers = 1
-
-    num_classes = 1
 
     lstm = model.LSTM_Model(num_classes, input_size,
                             hidden_size, num_layers, seq_len)
@@ -79,11 +78,11 @@ if __name__ == '__main__':
 
     # Train the model
     for epoch in range(num_epochs):
-        outputs = lstm(trainX)
+        outputs = lstm(train_x)
         optimizer.zero_grad()
 
         # obtain the loss function
-        loss = criterion(outputs, trainY)
+        loss = criterion(outputs, train_y)
 
         loss.backward()
 
