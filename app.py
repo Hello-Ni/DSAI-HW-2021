@@ -49,8 +49,7 @@ if __name__ == '__main__':
         energe_data)
     seq_len = 4
     x, y = createSequence(energe_data, seq_len)
-    n_train = int(len(y) * 0.9)
-
+    n_train = int(len(y) * 0.67)
     data_x = Variable(torch.Tensor(np.array(x)))
     data_y = Variable(torch.Tensor(np.array(y)))
 
@@ -59,7 +58,7 @@ if __name__ == '__main__':
 
     testX = Variable(torch.Tensor(np.array(x[n_train:])))
     testY = Variable(torch.Tensor(np.array(y[n_train:])))
-    #plt.plot(energe_data, label='data')
+    # plt.plot(energe_data, label='data')
     # plt.show()
 
     num_epochs = 2000
@@ -76,7 +75,7 @@ if __name__ == '__main__':
 
     criterion = torch.nn.MSELoss()    # mean-squared error for regression
     optimizer = torch.optim.Adam(lstm.parameters(), lr=learning_rate)
-    #optimizer = torch.optim.SGD(lstm.parameters(), lr=learning_rate)
+    # optimizer = torch.optim.SGD(lstm.parameters(), lr=learning_rate)
 
     # Train the model
     for epoch in range(num_epochs):
@@ -94,7 +93,6 @@ if __name__ == '__main__':
 
     lstm.eval()
     train_predict = lstm(data_x)
-
     data_predict = train_predict.data.numpy()
     data_y_plot = data_y.data.numpy()
 
@@ -106,4 +104,27 @@ if __name__ == '__main__':
     plt.plot(data_y_plot)
     plt.plot(data_predict)
     plt.suptitle('Time-Series Prediction')
-    plt.show()
+    # plt.show()
+    # predict result 3/30~4/10
+
+    recent_data = data_x[-1:, :, :]
+    future_data = []
+    for i in range(14):
+        next_data = lstm(recent_data)
+        recent_data = torch.cat((recent_data, next_data.unsqueeze(2)), 1)
+        recent_data = recent_data[:, 1:, :]
+
+        next_arr = next_data.data.numpy().flatten().tolist()
+        future_data.append(next_arr)
+    future_data = np.array(future_data)
+    future_data_plot = scaler.inverse_transform(future_data).flatten().tolist()
+    begin_date = 20220401
+    date = [20220330, 20220331]
+    for i in range(1, 13):
+        date.append((begin_date+i))
+
+    date = [str(i) for i in date]
+    future_data = [int(i) for i in future_data]
+    result = pd.DataFrame(
+        {'date': date, 'operating_reverse(MW)': future_data_plot})
+    result.to_csv("submission.csv")
